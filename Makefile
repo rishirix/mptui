@@ -1,2 +1,2 @@
 build:
-	gcc main.c -lmpv -o mptui
+	gcc main.c terminal.c player.c -lmpv -o mptui

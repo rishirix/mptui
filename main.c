@@ -1,24 +1,11 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <termios.h>
 #include <unistd.h>
-#include <mpv/client.h>
+#include "terminal.h"
+#include "player.h"
 
-struct termios original;
-void restore_terminal(){
-	tcsetattr(0,TCSAFLUSH,&original);
-}
-
-struct termios raw;
-void enable_raw_mode(){
-	tcgetattr(0,&raw);
-	raw.c_lflag &= ~(ECHO | ICANON);
-	tcsetattr(0,TCSAFLUSH,&raw);
-}
 
 int main(int argc, char *argv[]){
-	tcgetattr(0,&original);
-	atexit(restore_terminal);
+	terminal_set();
 	if(argc<2){
 		printf("No Argument passed\n");
 		return 1;
@@ -29,10 +16,7 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 	enable_raw_mode();
-	const char *cmd[] = {"loadfile",argv[1],NULL};
-	const char *seek_cmd[] = {"seek","2",NULL};
-	const char *peek_cmd[] = {"seek","-2",NULL};
-	mpv_command(player,cmd);
+	player_load(player,argv[1]);
 	int is_paused=0;
 	int is_running=1;
 	while(is_running){
@@ -44,20 +28,13 @@ int main(int argc, char *argv[]){
 					is_running=0;
 					break;
 				case 'p':
-					if(is_paused==0){
-						mpv_set_property_string(player,"pause","yes");
-						is_paused=1;
-					}
-					else{
-						mpv_set_property_string(player,"pause","no");
-						is_paused=0;
-					}
+					player_pause(player,&is_paused);
 					break;
 				case 'l':
-					mpv_command(player,seek_cmd);
+					player_seek(player,2);
 					break;
 				case 'h':
-					mpv_command(player,peek_cmd);
+					player_seek(player,-2);
 					break;
 			}
 		}
