@@ -2,20 +2,22 @@
 #include <unistd.h>
 #include "terminal.h"
 #include "player.h"
+#include "tui.h"
 
 
 int main(int argc, char *argv[]){
-	terminal_set();
 	if(argc<2){
 		printf("No Argument passed\n");
 		return 1;
 	}
+	terminal_set();
+	tui_init();
+	tui_draw(argv[1]);
 	mpv_handle *player=mpv_create();
 	if(mpv_initialize(player) < 0){
-		printf("Failed to initialize mpv\n");
+		//printf("Failed to initialize mpv\n");
 		return 1;
 	}
-	enable_raw_mode();
 	player_load(player,argv[1]);
 	int is_paused=0;
 	int is_running=1;
@@ -29,6 +31,7 @@ int main(int argc, char *argv[]){
 					break;
 				case 'p':
 					player_pause(player,&is_paused);
+					tui_update_status(is_paused);
 					break;
 				case 'l':
 					player_seek(player,2);
@@ -42,6 +45,7 @@ int main(int argc, char *argv[]){
 			break;
 		}
 	}
+	tui_cleanup();
 	mpv_destroy(player);
 	return 0;
 }
