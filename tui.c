@@ -43,6 +43,15 @@ void tui_update_status(int is_paused){
 	wrefresh(bottom_win);
 }
 
+void tui_update_header(const char *filename){
+	werase(header_win);
+	box(header_win,0,0);
+	char *base = basename((char *)filename);
+	mvwprintw(header_win,1,1,"%s",base);
+	wrefresh(header_win);
+
+}
+
 void tui_cleanup(){
 	endwin();
 }
